@@ -31,6 +31,6 @@ Este projeto foi desenvolvido como parte do programa de **Atividades de Extensã
 
 ## 👨‍💻 Autor
 
-* **[SEU NOME COMPLETO]**
+* **[Giovanny Gomes Brandão]**
 * **Curso:** Análise e Desenvolvimento de Sistemas
 * **Universidade:** UNIP - Universidade Paulista

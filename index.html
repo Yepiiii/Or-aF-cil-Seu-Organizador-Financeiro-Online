@@ -38,7 +38,7 @@
                 </div>
                 <div class="form-control">
                     <label for="amount">Valor (R$)</label>
-                    <input type="number" id="amount" placeholder="Use sinal de menos (-) para despesas" required>
+                    <input type="number" step="0.01" id="amount" placeholder="Use sinal de menos (-) para despesas" required>
                 </div>
                 <button type="submit">Adicionar Transação</button>
             </form>
@@ -49,11 +49,44 @@
             <ul id="list">
                 </ul>
         </section>
+
+        <section id="monthly-report">
+            <h3>Relatório Mensal</h3>
+            <select id="month-select">
+                </select>
+            <div id="report-content">
+                <p>Selecione um mês para ver o resumo.</p>
+            </div>
+        </section>
+
+        <section id="tutorial">
+            <h3>Como Usar a Ferramenta</h3>
+            <ol>
+                <li><strong>Adicionar Transação:</strong> Preencha a "Descrição" e o "Valor". Para despesas, use um valor negativo (ex: -50). Clique em "Adicionar Transação".</li>
+                <li><strong>Editar ou Excluir:</strong> Cada transação na lista possui botões de ação. Clique em "✏️" para editar a descrição e o valor, ou em "❌" para excluir.</li>
+                <li><strong>Ver Relatório Mensal:</strong> No menu "Relatório Mensal", selecione um mês para ver um resumo consolidado das suas finanças naquele período.</li>
+                <li><strong>Dados Salvos:</strong> Suas informações ficam salvas no seu navegador. Você pode fechar a página e voltar depois que seus dados continuarão aqui.</li>
+            </ol>
+        </section>
     </main>
 
     <footer>
         <p>Desenvolvido como Atividade de Extensão da UNIP.</p>
     </footer>
+
+    <div id="tips-popup" class="popup-overlay">
+        <div class="popup-content">
+            <button id="close-popup" class="close-btn">×</button>
+            <h4>✨ 5 Dicas para sua Saúde Financeira</h4>
+            <ul>
+                <li><strong>Crie um Orçamento:</strong> O primeiro passo é saber para onde seu dinheiro está indo. Use esta ferramenta para começar!</li>
+                <li><strong>Monte sua Reserva de Emergência:</strong> Guarde o equivalente a 3-6 meses de suas despesas para imprevistos.</li>
+                <li><strong>Evite Dívidas Caras:</strong> Fuja do rotativo do cartão de crédito e do cheque especial, pois os juros são muito altos.</li>
+                <li><strong>Pague-se Primeiro:</strong> Assim que receber seu salário, separe uma parte para seus objetivos (poupança, investimentos) antes de começar a gastar.</li>
+                <li><strong>Estude sobre Investimentos:</strong> Comece pelo básico, como Tesouro Direto ou CDBs, para fazer seu dinheiro render mais que a poupança.</li>
+            </ul>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 

@@ -1,4 +1,4 @@
-// Seleciona os elementos do HTML que vamos manipular
+// --- SELEÇÃO DE ELEMENTOS DO DOM ---
 const totalReceitasEl = document.getElementById('total-receitas');
 const totalDespesasEl = document.getElementById('total-despesas');
 const saldoFinalEl = document.getElementById('saldo-final');
@@ -6,94 +6,172 @@ const form = document.getElementById('transaction-form');
 const descriptionInput = document.getElementById('description');
 const amountInput = document.getElementById('amount');
 const list = document.getElementById('list');
+const monthSelect = document.getElementById('month-select');
+const reportContent = document.getElementById('report-content');
+const tipsPopup = document.getElementById('tips-popup');
+const closePopupButton = document.getElementById('close-popup');
 
-// Array para armazenar todas as transações.
-// No futuro, isso poderia ser salvo no LocalStorage para persistir os dados.
-let transactions = [];
+// --- LOCALSTORAGE ---
+const localStorageTransactions = JSON.parse(localStorage.getItem('transactions'));
+let transactions = localStorage.getItem('transactions') !== null ? localStorageTransactions : [];
 
-// Função que adiciona uma nova transação à lista na tela
+function saveTransactionsToLocalStorage() {
+    localStorage.setItem('transactions', JSON.stringify(transactions));
+}
+
+// --- FUNÇÕES PRINCIPAIS ---
+
 function addTransactionDOM(transaction) {
-    // Determina o sinal (positivo ou negativo)
     const sign = transaction.amount < 0 ? '-' : '+';
-    
-    // Define a classe CSS (receita ou despesa) para a cor da borda
     const itemClass = transaction.amount < 0 ? 'despesa' : 'receita';
-    
-    // Cria o elemento da lista (li)
     const item = document.createElement('li');
-    
-    // Adiciona a classe e o conteúdo HTML ao item
     item.classList.add(itemClass);
     item.innerHTML = `
-        ${transaction.description} 
+        <span class="transaction-text">${transaction.description}</span>
         <span>${sign} R$ ${Math.abs(transaction.amount).toFixed(2)}</span>
+        <div class="transaction-buttons">
+            <button class="edit-btn" onclick="editTransaction(${transaction.id})">✏️</button>
+            <button class="delete-btn" onclick="removeTransaction(${transaction.id})">❌</button>
+        </div>
     `;
-    
-    // Adiciona o novo item à lista na tela
     list.appendChild(item);
 }
 
-// Função para atualizar os valores do resumo (receitas, despesas, saldo)
 function updateSummary() {
-    // Pega todos os valores de transação do array
-    const amounts = transactions.map(transaction => transaction.amount);
-    
-    // Calcula o total de receitas (soma de todos os valores positivos)
-    const receitas = amounts
-        .filter(item => item > 0)
-        .reduce((acc, item) => (acc += item), 0)
-        .toFixed(2);
-        
-    // Calcula o total de despesas (soma de todos os valores negativos)
-    const despesas = (amounts
-        .filter(item => item < 0)
-        .reduce((acc, item) => (acc += item), 0) * -1)
-        .toFixed(2);
-        
-    // Calcula o saldo final
+    const amounts = transactions.map(t => t.amount);
+    const receitas = amounts.filter(item => item > 0).reduce((acc, item) => (acc += item), 0).toFixed(2);
+    const despesas = (amounts.filter(item => item < 0).reduce((acc, item) => (acc += item), 0) * -1).toFixed(2);
     const saldo = (receitas - despesas).toFixed(2);
-    
-    // Atualiza os valores no HTML
+
     totalReceitasEl.innerText = `R$ ${receitas}`;
     totalDespesasEl.innerText = `R$ ${despesas}`;
     saldoFinalEl.innerText = `R$ ${saldo}`;
 }
 
-// Função para adicionar uma nova transação
-function addTransaction(e) {
-    // Previne o comportamento padrão do formulário (recarregar a página)
+function handleFormSubmit(e) {
     e.preventDefault();
-
-    // Verifica se os campos não estão vazios
     if (descriptionInput.value.trim() === '' || amountInput.value.trim() === '') {
         alert('Por favor, preencha a descrição e o valor.');
-    } else {
-        // Cria o objeto da nova transação
-        const transaction = {
-            id: generateID(),
-            description: descriptionInput.value,
-            amount: +amountInput.value // O '+' converte o valor para número
-        };
-        
-        // Adiciona a nova transação ao array de transações
-        transactions.push(transaction);
-        
-        // Adiciona a transação à lista na tela (DOM)
-        addTransactionDOM(transaction);
-        
-        // Atualiza o resumo financeiro
-        updateSummary();
-        
-        // Limpa os campos do formulário
-        descriptionInput.value = '';
-        amountInput.value = '';
+        return;
+    }
+    const transaction = {
+        id: generateID(),
+        description: descriptionInput.value,
+        amount: +amountInput.value,
+        date: new Date().toISOString()
+    };
+    transactions.push(transaction);
+    saveTransactionsToLocalStorage();
+    init();
+    descriptionInput.value = '';
+    amountInput.value = '';
+}
+
+function removeTransaction(id) {
+    if (confirm('Tem certeza que deseja excluir esta transação?')) {
+        transactions = transactions.filter(transaction => transaction.id !== id);
+        saveTransactionsToLocalStorage();
+        init();
     }
 }
 
-// Função para gerar um ID aleatório
+function editTransaction(id) {
+    const transaction = transactions.find(t => t.id === id);
+    const newDescription = prompt('Digite a nova descrição:', transaction.description);
+    const newAmount = prompt('Digite o novo valor:', transaction.amount);
+
+    if (newDescription !== null && newAmount !== null && !isNaN(parseFloat(newAmount))) {
+        transaction.description = newDescription.trim() === '' ? transaction.description : newDescription;
+        transaction.amount = +newAmount;
+        saveTransactionsToLocalStorage();
+        init();
+    } else if (newDescription !== null || newAmount !== null) {
+        alert('Edição cancelada ou valor inválido.');
+    }
+}
+
+// --- LÓGICA DO RELATÓRIO MENSAL ---
+
+function populateMonthSelect() {
+    monthSelect.innerHTML = '<option value="">Relatório Geral</option>';
+    const months = new Set();
+    transactions.forEach(t => {
+        const date = new Date(t.date);
+        const monthYear = `${date.toLocaleString('pt-BR', { month: 'long' })}/${date.getFullYear()}`;
+        months.add(monthYear);
+    });
+
+    months.forEach(month => {
+        const option = document.createElement('option');
+        option.value = month;
+        option.innerText = month.charAt(0).toUpperCase() + month.slice(1);
+        monthSelect.appendChild(option);
+    });
+}
+
+function generateMonthlyReport(selectedMonth) {
+    if (!selectedMonth) {
+        reportContent.innerHTML = '<p>Selecione um mês para ver o resumo específico.</p>';
+        return;
+    }
+    
+    const [monthName, year] = selectedMonth.split('/');
+    const monthTransactions = transactions.filter(t => {
+        const date = new Date(t.date);
+        return date.toLocaleString('pt-BR', { month: 'long' }) === monthName && date.getFullYear() == year;
+    });
+
+    const amounts = monthTransactions.map(t => t.amount);
+    const receitas = amounts.filter(item => item > 0).reduce((acc, item) => (acc += item), 0).toFixed(2);
+    const despesas = (amounts.filter(item => item < 0).reduce((acc, item) => (acc += item), 0) * -1).toFixed(2);
+    const saldo = (receitas - despesas).toFixed(2);
+
+    reportContent.innerHTML = `
+        <h4>Resumo de ${selectedMonth.charAt(0).toUpperCase() + selectedMonth.slice(1)}</h4>
+        <p>Receitas: <span style="color: #2ecc71;">R$ ${receitas}</span></p>
+        <p>Despesas: <span style="color: #e74c3c;">R$ ${despesas}</span></p>
+        <p><strong>Saldo do Mês: R$ ${saldo}</strong></p>
+    `;
+}
+
+// --- INICIALIZAÇÃO ---
+
 function generateID() {
     return Math.floor(Math.random() * 1000000000);
 }
 
-// Event Listener: chama a função addTransaction quando o formulário for enviado
-form.addEventListener('submit', addTransaction);
+function init() {
+    list.innerHTML = '';
+    transactions.forEach(addTransactionDOM);
+    updateSummary();
+    populateMonthSelect();
+    generateMonthlyReport(monthSelect.value);
+}
+
+// --- LÓGICA DO POP-UP DE DICAS ---
+window.addEventListener('load', () => {
+    // Verifica se o pop-up já foi exibido nesta sessão
+    if (!sessionStorage.getItem('tipsShown')) {
+        setTimeout(() => {
+            tipsPopup.classList.add('show');
+            sessionStorage.setItem('tipsShown', 'true'); // Marca que foi exibido
+        }, 2000);
+    }
+});
+
+closePopupButton.addEventListener('click', () => {
+    tipsPopup.classList.remove('show');
+});
+
+tipsPopup.addEventListener('click', (e) => {
+    if (e.target === tipsPopup) {
+        tipsPopup.classList.remove('show');
+    }
+});
+
+// --- EVENT LISTENERS GERAIS ---
+form.addEventListener('submit', handleFormSubmit);
+monthSelect.addEventListener('change', (e) => generateMonthlyReport(e.target.value));
+
+// Inicia a aplicação
+init();
