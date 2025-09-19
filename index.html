@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrçaFácil: Seu Organizador Financeiro Online</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>OrçaFácil</h1>
+        <p>Seu Organizador Financeiro Pessoal</p>
+    </header>
+
+    <main>
+        <section id="summary-area">
+            <div class="summary-card">
+                <h4>Receitas</h4>
+                <p id="total-receitas">R$ 0.00</p>
+            </div>
+            <div class="summary-card">
+                <h4>Despesas</h4>
+                <p id="total-despesas">R$ 0.00</p>
+            </div>
+            <div class="summary-card balance">
+                <h4>Saldo Final</h4>
+                <p id="saldo-final">R$ 0.00</p>
+            </div>
+        </section>
+        
+        <section id="input-area">
+            <h3>Adicionar Nova Transação</h3>
+            <form id="transaction-form">
+                <div class="form-control">
+                    <label for="description">Descrição</label>
+                    <input type="text" id="description" placeholder="Ex: Salário, Aluguel" required>
+                </div>
+                <div class="form-control">
+                    <label for="amount">Valor (R$)</label>
+                    <input type="number" id="amount" placeholder="Use sinal de menos (-) para despesas" required>
+                </div>
+                <button type="submit">Adicionar Transação</button>
+            </form>
+        </section>
+
+        <section id="transactions-list">
+            <h3>Histórico de Transações</h3>
+            <ul id="list">
+                </ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>Desenvolvido como Atividade de Extensão da UNIP.</p>
+    </footer>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
